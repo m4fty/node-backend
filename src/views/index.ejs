@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome Page</title>
+  </head>
+  <body>
+    <h1>Welcome</h1>
+    <% if (loggedIn) { %>
+    <form action="/logout" method="GET">
+      <button type="submit">Logout</button>
+    </form>
+    <p>Welcome, <%= username %>! You can add, modify or delete your reviews.</p>
+    <% } else { %>
+    <form action="/register" method="GET">
+      <button type="submit">Register</button>
+    </form>
+    <form action="/login" method="GET">
+      <button type="submit">Login</button>
+    </form>
+    <% } %>
+
+    <h2>Search Books</h2>
+    <form action="/" method="GET">
+      <input
+        type="text"
+        name="isbn"
+        placeholder="Search by ISBN"
+        value="<%= isbnQuery %>"
+      />
+      <input
+        type="text"
+        name="author"
+        placeholder="Search by Author"
+        value="<%= authorQuery %>"
+      />
+      <input
+        type="text"
+        name="title"
+        placeholder="Search by Title"
+        value="<%= titleQuery %>"
+      />
+      <button type="submit">Search</button>
+    </form>
+
+    <h2>Booklist</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ISBN</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Reviews</th>
+          <% if (loggedIn) { %>
+          <th>Add Review</th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% books.forEach(book => { %>
+        <tr>
+          <td><%= book.isbn %></td>
+          <td><%= book.title %></td>
+          <td><%= book.author %></td>
+          <td>
+            <% if (book.reviews && book.reviews.length > 0) { %> <%
+            book.reviews.forEach((review, index) => { %>
+            <div>
+              <p><%= review.user %>: <%= review.text %></p>
+              <% if (loggedIn && review.user === username) { %>
+              <form
+                action="/api/reviews/<%= book.isbn %>/edit"
+                method="POST"
+                style="display: inline"
+              >
+                <input type="hidden" name="reviewIndex" value="<%= index %>" />
+                <input type="text" name="newText" placeholder="New Review" />
+                <button type="submit">Update</button>
+              </form>
+              <form
+                action="/api/reviews/<%= book.isbn %>/delete"
+                method="POST"
+                style="display: inline"
+              >
+                <input type="hidden" name="reviewIndex" value="<%= index %>" />
+                <button type="submit">Delete</button>
+              </form>
+              <% } %>
+            </div>
+            <% }) %> <% } else { %> No reviews yet <% } %>
+          </td>
+          <% if (loggedIn) { %>
+          <td>
+            <form action="/api/reviews/<%= book.isbn %>" method="POST">
+              <textarea
+                name="review"
+                placeholder="Write your review here..."
+              ></textarea>
+              <button type="submit">Add Review</button>
+            </form>
+          </td>
+          <% } %>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </body>
+</html>
